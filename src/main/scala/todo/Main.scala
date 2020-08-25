@@ -18,7 +18,7 @@ object Main extends zio.App {
 
   val program: URIO[Transactional, ExitCode] = {
     for {
-      _ <- Migrations.run
+      _ <- InitialDatabaseSetup.run
       transactor <- ZIO.service[Trx]
       _ <- Task.concurrentEffectWith { implicit ce =>
         Server.run.provide(Has(transactor))
@@ -26,3 +26,4 @@ object Main extends zio.App {
     } yield ExitCode.success
   }
 }
+

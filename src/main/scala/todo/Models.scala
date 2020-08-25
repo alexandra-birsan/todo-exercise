@@ -1,35 +1,83 @@
 package todo
 
+import io.circe.Codec
 import io.circe.generic.semiauto.deriveCodec
 
 object Models {
 
   final case class Todo(
-      id:   Int,
-      name: String,
-      done: Boolean
+      id:    Int,
+      name:  String,
+      done:  Boolean
   )
 
   object Todo {
-    implicit val circeCodec = deriveCodec[Todo]
+    implicit val circeCodec: Codec.AsObject[Todo] = deriveCodec[Todo]
   }
 
   final case class CreateTodo(name: String)
 
   object CreateTodo {
-    implicit val circeCodec = deriveCodec[CreateTodo]
+    implicit val circeCodec: Codec.AsObject[CreateTodo] = deriveCodec[CreateTodo]
   }
 
   final case class EmptyResponse()
 
   object EmptyResponse {
-    implicit val circeCodec = deriveCodec[EmptyResponse]
+    implicit val circeCodec: Codec.AsObject[EmptyResponse] = deriveCodec[EmptyResponse]
   }
 
-  final case class ErrorResponse(message: String)
+  sealed trait ErrorResp{
+  }
+
+  final case class ErrorResponse(message: String) extends ErrorResp
 
   object ErrorResponse {
-    implicit val circeCodec = deriveCodec[ErrorResponse]
+    implicit val circeCodec: Codec.AsObject[ErrorResponse] = deriveCodec[ErrorResponse]
   }
 
+  final case class UnAuthorizedErrorResponse(message: String) extends ErrorResp
+
+  object UnAuthorizedErrorResponse {
+    implicit val circeCodec: Codec.AsObject[UnAuthorizedErrorResponse] = deriveCodec[UnAuthorizedErrorResponse]
+
+  }
+
+  final case class ForbiddenResponse(message: String) extends ErrorResp
+
+  object ForbiddenResponse {
+    implicit val circeCodec: Codec.AsObject[ForbiddenResponse] = deriveCodec[ForbiddenResponse]
+
+  }
+
+  final case class User(id: Int, name: String, password: String)
+
+  object User {
+    implicit val circeCodex: Codec.AsObject[User] = deriveCodec[User]
+  }
+
+  case class Password(value:String)
+
+  object Password {
+    implicit val circeCodec: Codec.AsObject[Password] = deriveCodec[Password]
+  }
+
+  final case class UserCreation(name: String, password: String)
+
+  object UserCreation {
+    implicit val circeCodec: Codec.AsObject[UserCreation] = deriveCodec[UserCreation]
+  }
+
+  final case class AuthenticationResponse(token: String)
+
+  object AuthenticationResponse {
+    implicit val circeCodec: Codec.AsObject[AuthenticationResponse] = deriveCodec[AuthenticationResponse]
+
+  }
+
+  final case class JwtContent(owner: String)
+
+  object JwtContent {
+    implicit val circeCodec: Codec.AsObject[JwtContent] = deriveCodec[JwtContent]
+  }
 }
