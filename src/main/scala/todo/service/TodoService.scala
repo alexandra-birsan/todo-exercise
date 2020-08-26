@@ -1,8 +1,8 @@
 package todo.service
 
-import todo.Endpoints.AuthToken
-import todo.LoggingHelper.logMessage
-import todo.Models._
+import todo.route.Endpoints.AuthToken
+import util.LoggingHelper.logMessage
+import todo.model.Models._
 import todo.repository.TodoRepository._
 import todo.Trx
 import todo.service.AuthorizationService.isValidTokenForExistingUserAndExtractUser

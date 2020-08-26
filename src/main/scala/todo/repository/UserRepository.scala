@@ -3,8 +3,8 @@ package todo.repository
 import java.sql.SQLException
 
 import doobie.implicits._
-import todo.LoggingHelper.logErrorMessage
-import todo.Models.UserCreation
+import util.LoggingHelper.logErrorMessage
+import todo.model.Models.UserCreation
 import todo.Trx
 import zio.{Task, ZIO}
 import zio.interop.catz._

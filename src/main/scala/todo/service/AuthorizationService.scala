@@ -2,12 +2,12 @@ package todo.service
 
 import java.time.Clock
 
-import todo.Models.JwtContent
+import todo.model.Models.JwtContent
 import pdi.jwt._
 import zio._
 import io.circe.parser._
 import io.circe.syntax._
-import todo.LoggingHelper.logErrorMessage
+import util.LoggingHelper.logErrorMessage
 import todo.Trx
 import todo.service.UserService.checkUsernameExists
 

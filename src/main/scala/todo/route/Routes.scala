@@ -1,13 +1,12 @@
-package todo
+package todo.route
 
 import cats.implicits._
 import org.http4s.HttpRoutes
 import sttp.tapir.server.http4s._
-
-import todo.Endpoints._
+import todo.{Transactional, Trx}
+import todo.route.Endpoints._
 import todo.service.TodoService._
 import todo.service.UserService._
-
 import zio._
 import zio.interop.catz._
 import zio.ZIO
@@ -23,7 +22,7 @@ object Routes {
       }
 
       val finishRoute = finishTodo.toRoutes {
-        case (id, authToken) => handleToDoItemFinish(authToken, id)
+        case (authToken, id) => handleToDoItemFinish(authToken, id)
       }
 
       val userCreationRoute = createUser.toRoutes(handleUserCreation(_))

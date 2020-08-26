@@ -5,6 +5,7 @@ import java.util.concurrent.Executors
 import cats.effect.{ConcurrentEffect, Timer}
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
+import todo.route.Routes
 
 import scala.concurrent.ExecutionContext
 import zio._

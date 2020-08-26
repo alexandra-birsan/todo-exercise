@@ -1,30 +1,20 @@
-package todo
-
-import sttp.tapir.json.circe.jsonBody
-import sttp.tapir._
+package todo.route
 
 import sttp.model.StatusCode
-
-import todo.Models._
+import sttp.tapir.json.circe.jsonBody
+import sttp.tapir._
+import todo.model.Models._
 
 object Endpoints {
 
   type AuthToken = String
-  private val authorizationHeader = header[AuthToken]("Authorization")
-
-//  val baseEndpoint: Endpoint[Unit, ErrorResp, Unit, Nothing] =
-//    endpoint
-//      .errorOut(
-//        oneOf[Either[ErrorResp]](
-//          statusMappingFromMatchType(StatusCode.Unauthorized, jsonBody[UnAuthorizedErrorResponse]),
-//          statusMappingFromMatchType(StatusCode.Forbidden, jsonBody[ForbiddenResponse]),
-//        )
-//      )
+  private val baseV1Endpoint               = endpoint.in("v1")
+  private val authorizationHeader          = header[AuthToken]("Authorization")
+  private val baseV1TodoAuthorizedEndpoint = baseV1Endpoint.in(authorizationHeader).in("todo")
+  private val baseV1UserEndpoint           = baseV1Endpoint.in("auth")
 
   val listTodos: Endpoint[AuthToken, ErrorResp, List[Todo], Nothing] = {
-    endpoint.get
-      .in("v1" / "todo")
-      .in(authorizationHeader)
+    baseV1TodoAuthorizedEndpoint.get
       .out(jsonBody[List[Todo]])
       .errorOut(
         oneOf[ErrorResp](
@@ -36,9 +26,7 @@ object Endpoints {
   }
 
   val createTodo: Endpoint[(AuthToken, CreateTodo), UnauthorizedErrorResponse, EmptyResponse, Nothing] = {
-    endpoint.post
-      .in("v1" / "todo")
-      .in(authorizationHeader)
+    baseV1TodoAuthorizedEndpoint.post
       .in(
         jsonBody[CreateTodo]
           .validate(Validator.minLength(1).contramap(_.name))
@@ -51,10 +39,9 @@ object Endpoints {
       )
   }
 
-  val finishTodo: Endpoint[(Int, AuthToken), ErrorResp, EmptyResponse, Nothing] = {
-    endpoint.put
-      .in("v1" / "todo" / path[Int]("id"))
-      .in(authorizationHeader)
+  val finishTodo: Endpoint[(AuthToken, Int), ErrorResp, EmptyResponse, Nothing] = {
+    baseV1TodoAuthorizedEndpoint.put
+      .in(path[Int]("id"))
       .out(jsonBody[EmptyResponse])
       .errorOut(
         oneOf[ErrorResp](
@@ -69,8 +56,8 @@ object Endpoints {
   }
 
   val createUser: Endpoint[UserCreation, ErrorResponse, EmptyResponse, Nothing] = {
-    endpoint.post
-      .in("v1" / "auth" / "new")
+    baseV1UserEndpoint.post
+      .in("new")
       .in(
         jsonBody[UserCreation]
           .validate(Validator.minLength(3).contramap(_.name))
@@ -85,8 +72,7 @@ object Endpoints {
   }
 
   val authenticateUser: Endpoint[UserCreation, UnauthorizedErrorResponse, AuthenticationResponse, Nothing] = {
-    endpoint.post
-      .in("v1" / "auth")
+    baseV1UserEndpoint.post
       .in(jsonBody[UserCreation])
       .out(jsonBody[AuthenticationResponse])
       .errorOut(oneOf(unAuthorizeErrorResponseMapping))

@@ -1,7 +1,7 @@
-package todo
+package util
 
 import doobie.implicits._
-
+import todo.{Transactional, Trx}
 import zio._
 import zio.interop.catz._
 

@@ -1,4 +1,4 @@
-package todo
+package todo.model
 
 import io.circe.Codec
 import io.circe.generic.semiauto.deriveCodec

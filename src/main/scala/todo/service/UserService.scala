@@ -2,8 +2,8 @@ package todo.service
 
 import org.sqlite.SQLiteErrorCode
 import AuthorizationService.generateToken
-import todo.Models._
-import todo.PasswordUtils.determineHash
+import todo.model.Models._
+import util.PasswordUtils.determineHash
 import todo.Trx
 import todo.repository.UserRepository.{checkCredentials, getFirstUserWithName, saveUser}
 import zio.{Task, ZIO}
