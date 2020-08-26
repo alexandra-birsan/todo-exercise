@@ -1,20 +1,20 @@
-package todo
+package todo.service
 
-import java.time.{Clock}
+import java.time.Clock
 
+import todo.Models.JwtContent
 import pdi.jwt._
-import todo.Models.{JwtContent}
 import zio._
-
 import io.circe.parser._
 import io.circe.syntax._
 import todo.LoggingHelper.logErrorMessage
-import todo.UserService.checkUsernameExists
+import todo.Trx
+import todo.service.UserService.checkUsernameExists
 
-object Authorization {
+object AuthorizationService {
 
- private val secret = "secretKey"
-  private val authorization = JwtAlgorithm.HS256
+  private val secret            = "secretKey"
+  private val authorization     = JwtAlgorithm.HS256
   private val header            = JwtHeader(authorization)
   private val validityInSeconds = 180
 

@@ -6,9 +6,9 @@ import io.circe.generic.semiauto.deriveCodec
 object Models {
 
   final case class Todo(
-      id:    Int,
-      name:  String,
-      done:  Boolean
+      id:   Int,
+      name: String,
+      done: Boolean
   )
 
   object Todo {
@@ -27,8 +27,7 @@ object Models {
     implicit val circeCodec: Codec.AsObject[EmptyResponse] = deriveCodec[EmptyResponse]
   }
 
-  sealed trait ErrorResp{
-  }
+  sealed trait ErrorResp {}
 
   final case class ErrorResponse(message: String) extends ErrorResp
 
@@ -36,10 +35,10 @@ object Models {
     implicit val circeCodec: Codec.AsObject[ErrorResponse] = deriveCodec[ErrorResponse]
   }
 
-  final case class UnAuthorizedErrorResponse(message: String) extends ErrorResp
+  final case class UnauthorizedErrorResponse(message: String) extends ErrorResp
 
-  object UnAuthorizedErrorResponse {
-    implicit val circeCodec: Codec.AsObject[UnAuthorizedErrorResponse] = deriveCodec[UnAuthorizedErrorResponse]
+  object UnauthorizedErrorResponse {
+    implicit val circeCodec: Codec.AsObject[UnauthorizedErrorResponse] = deriveCodec[UnauthorizedErrorResponse]
 
   }
 
@@ -56,7 +55,7 @@ object Models {
     implicit val circeCodex: Codec.AsObject[User] = deriveCodec[User]
   }
 
-  case class Password(value:String)
+  case class Password(value: String)
 
   object Password {
     implicit val circeCodec: Codec.AsObject[Password] = deriveCodec[Password]

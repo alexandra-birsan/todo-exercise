@@ -28,14 +28,6 @@ object InitialDatabaseSetup {
          |""".stripMargin
   }
 
-  def getOwnerOfTheTodoItem(id:Int)(implicit transactor: Trx): Task[Option[String]] = {
-    sql"""select users.name from users where users.id  = (SELECT owner_id from todo  where todo.id = ${id})"""
-      .stripMargin
-      .query[String]
-      .option
-      .transact(transactor)
-  }
-
   def run: URIO[Transactional, Unit] = {
     ZIO.service[Trx].flatMap { transactor =>
       createTodoTable.update.run.transact(transactor).unit.orDie
