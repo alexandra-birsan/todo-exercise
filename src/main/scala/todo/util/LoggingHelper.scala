@@ -1,4 +1,4 @@
-package util
+package todo.util
 
 import zio.{Task, ZIO}
 

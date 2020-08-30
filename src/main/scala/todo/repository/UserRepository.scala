@@ -3,15 +3,15 @@ package todo.repository
 import java.sql.SQLException
 
 import doobie.implicits._
-import util.LoggingHelper.logErrorMessage
-import todo.model.Models.UserCreation
+import todo.util.LoggingHelper.logErrorMessage
+import todo.model.Models.UserCredentials
 import todo.Trx
 import zio.{Task, ZIO}
 import zio.interop.catz._
 
 object UserRepository {
 
-  def saveUser(createUser: UserCreation, password: String)(
+  def saveUser(createUser: UserCredentials, password: String)(
       implicit transactor: Trx
   ): ZIO[Any, Throwable, Either[SQLException, Int]] = {
     sql"""insert into users (name, password)

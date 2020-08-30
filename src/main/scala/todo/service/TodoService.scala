@@ -1,7 +1,7 @@
 package todo.service
 
 import todo.route.Endpoints.AuthToken
-import util.LoggingHelper.logMessage
+import todo.util.LoggingHelper.logMessage
 import todo.model.Models._
 import todo.repository.TodoRepository._
 import todo.Trx

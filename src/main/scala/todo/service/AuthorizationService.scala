@@ -7,7 +7,7 @@ import pdi.jwt._
 import zio._
 import io.circe.parser._
 import io.circe.syntax._
-import util.LoggingHelper.logErrorMessage
+import todo.util.LoggingHelper.logErrorMessage
 import todo.Trx
 import todo.service.UserService.checkUsernameExists
 
@@ -30,13 +30,12 @@ object AuthorizationService {
       token:             String
   )(implicit transactor: Trx): ZIO[Any, Throwable, Option[String]] = {
     isValidToken(token)
-      .fold(
+      .foldM(
         _ => ZIO.succeed(Option.empty[String]),
         claim =>
           isClaimForExistingUser(claim)
             .flatMap { if (_) getUsernameFromClaim(claim) else ZIO.succeed(Option.empty[String]) }
       )
-      .flatten[Any, Throwable, Option[String]]
   }
 
   private def isValidToken(token: String): ZIO[Any, Throwable, JwtClaim] = {

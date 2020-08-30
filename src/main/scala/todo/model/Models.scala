@@ -61,10 +61,10 @@ object Models {
     implicit val circeCodec: Codec.AsObject[Password] = deriveCodec[Password]
   }
 
-  final case class UserCreation(name: String, password: String)
+  final case class UserCredentials(name: String, password: String)
 
-  object UserCreation {
-    implicit val circeCodec: Codec.AsObject[UserCreation] = deriveCodec[UserCreation]
+  object UserCredentials {
+    implicit val circeCodec: Codec.AsObject[UserCredentials] = deriveCodec[UserCredentials]
   }
 
   final case class AuthenticationResponse(token: String)

@@ -20,6 +20,7 @@ libraryDependencies ++= Seq(
   "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % tapirVersion,
   "org.http4s" %% "http4s-blaze-server" % http4sVersion,
   "com.pauldijou" %% "jwt-circe" % "4.2.0",
-  "org.scalatest" %% "scalatest" % "3.0.8" % Test
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test,
+  "dev.zio" %% "zio-test" % "1.0.0" % Test
 )
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3")

@@ -55,11 +55,11 @@ object Endpoints {
     statusMapping(StatusCode.Forbidden, jsonBody[ForbiddenResponse])
   }
 
-  val createUser: Endpoint[UserCreation, ErrorResponse, EmptyResponse, Nothing] = {
+  val createUser: Endpoint[UserCredentials, ErrorResponse, EmptyResponse, Nothing] = {
     baseV1UserEndpoint.post
       .in("new")
       .in(
-        jsonBody[UserCreation]
+        jsonBody[UserCredentials]
           .validate(Validator.minLength(3).contramap(_.name))
           .validate(Validator.minLength(5).contramap(_.password))
       )
@@ -71,9 +71,9 @@ object Endpoints {
     statusMapping(StatusCode.Created, jsonBody[EmptyResponse])
   }
 
-  val authenticateUser: Endpoint[UserCreation, UnauthorizedErrorResponse, AuthenticationResponse, Nothing] = {
+  val authenticateUser: Endpoint[UserCredentials, UnauthorizedErrorResponse, AuthenticationResponse, Nothing] = {
     baseV1UserEndpoint.post
-      .in(jsonBody[UserCreation])
+      .in(jsonBody[UserCredentials])
       .out(jsonBody[AuthenticationResponse])
       .errorOut(oneOf(unAuthorizeErrorResponseMapping))
   }

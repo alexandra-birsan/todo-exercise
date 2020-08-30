@@ -1,4 +1,4 @@
-package util
+package todo.util
 
 import doobie.implicits._
 import todo.{Transactional, Trx}
@@ -7,7 +7,7 @@ import zio.interop.catz._
 
 object InitialDatabaseSetup {
 
-  private val createTodoTable = {
+   val createTodoTable = {
     sql"""
          |create table if not exists todo(
          |    id    integer primary key,
@@ -18,7 +18,7 @@ object InitialDatabaseSetup {
          |)""".stripMargin
   }
 
-  private val createUsersTable = {
+   val createUsersTable = {
     sql"""
          |create table if not exists  users(
          |id integer primary key,
@@ -34,5 +34,4 @@ object InitialDatabaseSetup {
       createUsersTable.update.run.transact(transactor).unit.orDie
     }
   }
-
 }

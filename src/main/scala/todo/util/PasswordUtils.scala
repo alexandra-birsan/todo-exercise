@@ -1,4 +1,4 @@
-package util
+package todo.util
 
 import java.security.MessageDigest
 

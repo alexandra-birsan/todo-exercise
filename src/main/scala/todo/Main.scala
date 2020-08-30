@@ -1,7 +1,7 @@
 package todo
 
 import doobie.Transactor
-import util.InitialDatabaseSetup
+import todo.util.InitialDatabaseSetup
 import zio._
 import zio.interop.catz._
 import zio.interop.catz.implicits._

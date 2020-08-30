@@ -1,7 +1,7 @@
 package todo.repository
 
 import doobie.implicits._
-import util.LoggingHelper.logErrorMessage
+import todo.util.LoggingHelper.logErrorMessage
 import todo.model.Models.{CreateTodo, Todo}
 import todo.Trx
 import zio.{Task, ZIO}
