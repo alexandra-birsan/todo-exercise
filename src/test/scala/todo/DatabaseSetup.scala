@@ -27,7 +27,8 @@ object DatabaseSetup {
     sql"""INSERT INTO todo (name, owner_id, done) VALUES
          |('Smile more often!', 1, false),
          |('Be nice!', 1, true),
-         |('Read at least 15 minutes a day',2, false)
+         |('Read at least 15 minutes a day',2, true),
+         |('Buy a cake',2, false)
          """.stripMargin
   }
 

@@ -1,28 +1,25 @@
-package todo
+package todo.route
 
-import org.http4s._
-import todo.model.Models._
-import todo.service.AuthorizationService
-import zio._
-import zio.test.Assertion._
-import zio.test._
+import io.circe.parser._
 import io.circe.syntax._
-import pdi.jwt.{Jwt, JwtClaim}
-import todo.ListTodoItemsSpec.getResponseBody
-import todo.UserSpec.getResponseBody
-import todo.service.AuthorizationService.{authorization, secret}
-import todo.util.LoggingHelper.logErrorMessage
-import zio.interop.catz._
-import io.circe.parser.decode
+import org.http4s.{Method, Request, Status, Uri}
+import pdi.jwt.Jwt
+import todo.{DatabaseSetup, ServiceSpec}
+import todo.model.Models._
+import todo.route.CreateTodoItemSpec.transactor
+import zio.{Runtime, Task, ZLayer}
+import zio.test.Assertion.equalTo
+import zio.test._
 
 import scala.util.Try
 
 object UserSpec extends ServiceSpec {
 
   private implicit val request: Request[Task] = Request[Task](Method.POST, Uri(path = "v1/auth"))
+  Runtime.unsafeFromLayer(ZLayer.succeed(transactor)).unsafeRun(DatabaseSetup.run.unit)
 
   override def spec: ZSpec[_root_.zio.test.environment.TestEnvironment, Any] = suite("User  service")(
-    testM("create user when username already exists") {
+    testM("create user when the username already exists") {
       val finalRequest =
         request.withUri(Uri(path = "v1/auth/new")).withEntity(UserCredentials("John", "secret123").asJson.noSpaces)
       val value = app.run(finalRequest).value
@@ -31,19 +28,19 @@ object UserSpec extends ServiceSpec {
         isExpectedBody <- assertM(getResponseBody(value))(equalTo(ErrorResponse("User already exists").asJson.noSpaces))
       } yield isExpectedStatus && isExpectedBody
     },
-    testM("create user with invalid username") {
+    testM("create user with an invalid username") {
       val finalRequest =
         request.withUri(Uri(path = "v1/auth/new")).withEntity(UserCredentials("a", "secret123").asJson.noSpaces)
       val value = app.run(finalRequest).value
       assertM(value.map(_.get.status))(equalTo(Status.BadRequest))
     },
-    testM("create user with invalid password") {
+    testM("create user with an invalid password") {
       val finalRequest =
         request.withUri(Uri(path = "v1/auth/new")).withEntity(UserCredentials("Isac", "9").asJson.noSpaces)
       val value = app.run(finalRequest).value
       assertM(value.map(_.get.status))(equalTo(Status.BadRequest))
     },
-    testM("create user when all validations successfully passed") {
+    testM("create user when all the validations are successfully  passed") {
       val finalRequest =
         request.withUri(Uri(path = "v1/auth/new")).withEntity(UserCredentials("Isac", "secret123*").asJson.noSpaces)
       val value = app.run(finalRequest).value

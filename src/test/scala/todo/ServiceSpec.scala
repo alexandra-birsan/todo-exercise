@@ -10,11 +10,10 @@ import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim, JwtHeader}
 import todo.model.Models.JwtContent
 import todo.route.Routes
 import todo.service.AuthorizationService
-import todo.service.AuthorizationService.{header, secret}
 import zio.interop.catz._
 import zio.test.Assertion.equalTo
 import zio.test._
-import zio.{Runtime, Task, ZIO, ZLayer}
+import zio.{Task, ZIO}
 
 trait ServiceSpec extends DefaultRunnableSpec {
 
@@ -24,11 +23,11 @@ trait ServiceSpec extends DefaultRunnableSpec {
   )
 
   val secret        = "secretKey"
-  val authorization = JwtAlgorithm.HS256
-  val header        = JwtHeader(authorization)
+  val authorization: JwtAlgorithm.HS256.type = JwtAlgorithm.HS256
+  val header: JwtHeader = JwtHeader(authorization)
   val app: HttpRoutes[Task] = Routes.routes
-  private val runtime = Runtime.unsafeFromLayer(ZLayer.succeed(transactor))
-  runtime.unsafeRun(DatabaseSetup.run.unit)
+
+  override def runner: TestRunner[_root_.zio.test.environment.TestEnvironment, Any] = super.runner
 
   def getResponseBody(value: Task[Option[Response[Task]]]): ZIO[Any, Throwable, String] = {
     for {

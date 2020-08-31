@@ -1,29 +1,31 @@
-package todo
+package todo.route
 
-import org.http4s._
-import todo.model.Models._
-import todo.service.AuthorizationService
-import zio._
-import zio.test.Assertion._
-import zio.test._
 import io.circe.syntax._
+import org.http4s._
+import todo.model.Models.{CreateTodo, Todo}
+import todo.service.AuthorizationService
+import todo.{DatabaseSetup, ServiceSpec}
+import zio.{Runtime, Task, ZLayer}
+import zio.test.Assertion.equalTo
+import zio.test.{ZSpec, assertM, suite, testM}
 
 object CreateTodoItemSpec extends ServiceSpec {
 
   implicit val request: Request[Task]#Self = Request[Task](Method.POST, Uri(path = "v1/todo"))
     .withEntity(CreateTodo("Buy tickets").asJson.noSpaces)
+  Runtime.unsafeFromLayer(ZLayer.succeed(transactor)).unsafeRun(DatabaseSetup.run.unit)
 
   override def spec: ZSpec[_root_.zio.test.environment.TestEnvironment, Any] = suite("Create Todo  item")(
     testM("without the Authorization header") {
       withoutAuthorizationHeader
     },
-    testM("with invalid Authorization header") {
+    testM("with an invalid Authorization header") {
       withInvalidAuthorizationHeader
     },
     testM("with an Authorization header that does not belong to an existing user") {
       withJwtWithOwnerNotAnExistingUser
     },
-    testM("when expired JWT") {
+    testM("with expired JWT") {
       withExpiredJwt
     },
     testM("with invalid todo item name") {
@@ -34,16 +36,17 @@ object CreateTodoItemSpec extends ServiceSpec {
       val value = app.run(finalRequest).value
       assertM(value.map(_.get.status))(equalTo(Status.BadRequest))
     },
-    testM("when validations passed successfully") {
+    testM("when all the validations are successfully passed") {
       val token               = AuthorizationService.generateToken("John")
       val finalRequest        = request.putHeaders(Header("Authorization", token))
       val value               = app.run(finalRequest).value
-      val nextToDoIdAvailable = 4
+      val nextToDoIdAvailable = 5
       val idOfTheLoggedInUser = 1
       for {
         isExpectedStatus <- assertM(value.map(_.get.status))(equalTo(Status.Created))
         isToDoItemCreated <- assertM(DatabaseSetup.getToDoItem(nextToDoIdAvailable))(
-          equalTo(Todo(nextToDoIdAvailable, "Buy tickets", done = false)))
+          equalTo(Todo(nextToDoIdAvailable, "Buy tickets", done = false))
+        )
         isExpectedOwner <- assertM(DatabaseSetup.getOwnerIdOfTheToDoItem(nextToDoIdAvailable))(
           equalTo(idOfTheLoggedInUser)
         )
