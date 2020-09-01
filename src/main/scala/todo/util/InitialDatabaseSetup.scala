@@ -1,13 +1,14 @@
 package todo.util
 
 import doobie.implicits._
+import doobie.util.fragment
 import todo.{Transactional, Trx}
 import zio._
 import zio.interop.catz._
 
 object InitialDatabaseSetup {
 
-   val createTodoTable = {
+   val createTodoTable: fragment.Fragment = {
     sql"""
          |create table if not exists todo(
          |    id    integer primary key,
@@ -18,7 +19,7 @@ object InitialDatabaseSetup {
          |)""".stripMargin
   }
 
-   val createUsersTable = {
+   val createUsersTable: fragment.Fragment = {
     sql"""
          |create table if not exists  users(
          |id integer primary key,

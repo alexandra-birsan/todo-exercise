@@ -11,22 +11,24 @@ import zio.{Task, ZIO}
 object UserService {
 
   def handleUserCreation(
-                          createUserInfo:        UserCredentials
+      createUserInfo:    UserCredentials
   )(implicit transactor: Trx): ZIO[Any, Throwable, Either[ErrorResponse, EmptyResponse]] = {
     checkUsernameExists(createUserInfo.name).flatMap {
       if (_)
-        ZIO.effect(println(s"User with name ${createUserInfo.name} already exists"))
+        ZIO
+          .effect(println(s"User with name ${createUserInfo.name} already exists"))
           .as(Left(ErrorResponse("User already exists")))
       else createUser(createUserInfo)
     }
   }
 
-  private def createUser(createUser: UserCredentials)
-                        (implicit trx: Trx): ZIO[Any, Throwable, Either[ErrorResponse, EmptyResponse]] = {
+  private def createUser(
+      createUser: UserCredentials
+  )(implicit trx: Trx): ZIO[Any, Throwable, Either[ErrorResponse, EmptyResponse]] = {
     val passwordHash = determineHash(createUser.password)
     saveUser(createUser, passwordHash).flatMap {
       case Left(_) => ZIO.succeed(Left(ErrorResponse("Error while creating the user")))
-      case _ => ZIO.succeed(Right(EmptyResponse()))
+      case _       => ZIO.succeed(Right(EmptyResponse()))
     }
   }
 
