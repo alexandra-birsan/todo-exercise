@@ -15,19 +15,17 @@ import zio.test.Assertion.equalTo
 import zio.test._
 import zio.{Task, ZIO}
 
-trait ServiceSpec extends DefaultRunnableSpec {
+trait ServiceSpec {
 
   implicit val transactor: Aux[Task, Unit] = Transactor.fromDriverManager[Task](
     driver = "org.sqlite.JDBC",
     url    = "jdbc:sqlite:test.db"
   )
 
-  val secret        = "secretKey"
+  val secret = "secretKey"
   val authorization: JwtAlgorithm.HS256.type = JwtAlgorithm.HS256
-  val header: JwtHeader = JwtHeader(authorization)
-  val app: HttpRoutes[Task] = Routes.routes
-
-  override def runner: TestRunner[_root_.zio.test.environment.TestEnvironment, Any] = super.runner
+  val header:        JwtHeader               = JwtHeader(authorization)
+  val app:           HttpRoutes[Task]        = Routes.routes
 
   def getResponseBody(value: Task[Option[Response[Task]]]): ZIO[Any, Throwable, String] = {
     for {

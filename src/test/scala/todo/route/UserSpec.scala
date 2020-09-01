@@ -6,17 +6,18 @@ import org.http4s.{Method, Request, Status, Uri}
 import pdi.jwt.Jwt
 import todo.{DatabaseSetup, ServiceSpec}
 import todo.model.Models._
-import todo.route.CreateTodoItemSpec.transactor
 import zio.{Runtime, Task, ZLayer}
 import zio.test.Assertion.equalTo
 import zio.test._
 
 import scala.util.Try
 
-object UserSpec extends ServiceSpec {
+object UserSpec extends DefaultRunnableSpec with ServiceSpec {
 
   private implicit val request: Request[Task] = Request[Task](Method.POST, Uri(path = "v1/auth"))
-  Runtime.unsafeFromLayer(ZLayer.succeed(transactor)).unsafeRun(DatabaseSetup.run.unit)
+  private val runtime = Runtime.unsafeFromLayer(ZLayer.succeed(transactor))
+  runtime.unsafeRun(DatabaseSetup.run.unit)
+  runtime.shutdown()
 
   override def spec: ZSpec[_root_.zio.test.environment.TestEnvironment, Any] = suite("User  service")(
     testM("create user when the username already exists") {

@@ -7,13 +7,16 @@ import todo.service.AuthorizationService
 import todo.{DatabaseSetup, ServiceSpec}
 import zio.{Runtime, Task, ZLayer}
 import zio.test.Assertion.equalTo
-import zio.test.{ZSpec, assertM, suite, testM}
+import zio.test.{assertM, suite, testM, DefaultRunnableSpec, ZSpec}
 
-object CreateTodoItemSpec extends ServiceSpec {
+object CreateTodoItemSpec extends DefaultRunnableSpec with ServiceSpec {
 
   implicit val request: Request[Task]#Self = Request[Task](Method.POST, Uri(path = "v1/todo"))
     .withEntity(CreateTodo("Buy tickets").asJson.noSpaces)
-  Runtime.unsafeFromLayer(ZLayer.succeed(transactor)).unsafeRun(DatabaseSetup.run.unit)
+
+  private val runtime = Runtime.unsafeFromLayer(ZLayer.succeed(transactor))
+  runtime.unsafeRun(DatabaseSetup.run.unit)
+  runtime.shutdown()
 
   override def spec: ZSpec[_root_.zio.test.environment.TestEnvironment, Any] = suite("Create Todo  item")(
     testM("without the Authorization header") {
