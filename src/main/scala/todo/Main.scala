@@ -27,4 +27,3 @@ object Main extends zio.App {
     } yield ExitCode.success
   }
 }
-

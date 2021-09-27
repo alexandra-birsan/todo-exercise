@@ -8,7 +8,7 @@ import zio.interop.catz._
 
 object InitialDatabaseSetup {
 
-   val createTodoTable: fragment.Fragment = {
+  val createTodoTable: fragment.Fragment = {
     sql"""
          |create table if not exists todo(
          |    id    integer primary key,
@@ -19,7 +19,7 @@ object InitialDatabaseSetup {
          |)""".stripMargin
   }
 
-   val createUsersTable: fragment.Fragment = {
+  val createUsersTable: fragment.Fragment = {
     sql"""
          |create table if not exists  users(
          |id integer primary key,
