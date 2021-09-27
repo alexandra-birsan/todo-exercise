@@ -15,7 +15,7 @@ import zio.test.Assertion.equalTo
 import zio.test._
 import zio.{Task, ZIO}
 
-trait ServiceSpec {
+trait ServiceSpec extends Routes {
 
   implicit val transactor: Aux[Task, Unit] = Transactor.fromDriverManager[Task](
     driver = "org.sqlite.JDBC",
@@ -25,7 +25,7 @@ trait ServiceSpec {
   val secret = "secretKey"
   val authorization: JwtAlgorithm.HS256.type = JwtAlgorithm.HS256
   val header:        JwtHeader               = JwtHeader(authorization)
-  val app:           HttpRoutes[Task]        = Routes.routes
+  val app:           HttpRoutes[Task]        = routes
 
   def getResponseBody(value: Task[Option[Response[Task]]]): ZIO[Any, Throwable, String] = {
     for {
