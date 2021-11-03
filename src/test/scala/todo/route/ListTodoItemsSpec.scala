@@ -30,7 +30,7 @@ object ListTodoItemsSpec extends DefaultRunnableSpec with ServiceSpec {
       withExpiredJwt
     },
     testM("with an Authorization header that belongs to an existing user") {
-      val token        = AuthorizationService.generateToken("Alex")
+      val token        = authorizationService.generateToken("Alex")
       val finalRequest = request.putHeaders(Header("Authorization", token))
       val value        = app.run(finalRequest).value
       for {

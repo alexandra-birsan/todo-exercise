@@ -1,21 +1,19 @@
 package todo
 
 import java.time.Clock
-
 import doobie.util.transactor.Transactor
 import doobie.util.transactor.Transactor.Aux
 import io.circe.syntax._
 import org.http4s.{Header, HttpRoutes, Request, Response, Status}
 import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim, JwtHeader}
-import todo.model.Models.JwtContent
-import todo.route.Routes
-import todo.service.AuthorizationService
+import model.Models.JwtContent
+import route.Routes
 import zio.interop.catz._
 import zio.test.Assertion.equalTo
 import zio.test._
 import zio.{Task, ZIO}
 
-trait ServiceSpec extends Routes {
+trait ServiceSpec extends Routes with ServerEnvironmentLive {
 
   implicit val transactor: Aux[Task, Unit] = Transactor.fromDriverManager[Task](
     driver = "org.sqlite.JDBC",
@@ -50,7 +48,7 @@ trait ServiceSpec extends Routes {
   }
 
   def withJwtWithOwnerNotAnExistingUser(implicit request: Request[Task]): ZIO[Any, Throwable, TestResult] = {
-    val token        = AuthorizationService.generateToken("Peter")
+    val token        = authorizationService.generateToken("Peter")
     val finalRequest = request.putHeaders(Header("Authorization", token))
     assertM(app.run(finalRequest).value.map(_.get.status))(equalTo(Status.Unauthorized))
   }

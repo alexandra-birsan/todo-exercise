@@ -5,32 +5,39 @@ import todo.util.LoggingHelper.logMessage
 import todo.model.Models._
 import todo.repository.TodoRepository._
 import todo.Trx
-import todo.service.AuthorizationService.isValidTokenForExistingUserAndExtractUser
 import zio.ZIO
-
-trait TodoService {
-
-  def handleTodoItemCreation(authToken: AuthToken, createTodo: CreateTodo)(
-      implicit transactor:              Trx
-  ): ZIO[Any, Throwable, Either[UnauthorizedErrorResponse, EmptyResponse]]
-
-  def handleToDoItemFinish(authToken: AuthToken, id: Int)(
-      implicit transactor:            Trx
-  ): ZIO[Any, Throwable, Either[ErrorResp, EmptyResponse]]
-
-  def handleListTodoItems(
-      authToken:         AuthToken
-  )(implicit transactor: Trx): ZIO[Any, Throwable, Either[ErrorResp, List[Todo]]]
-}
 
 object TodoService {
 
-  def instance: TodoService = new TodoService {
+  trait Service {
+    def handleTodoItemCreation(authToken: AuthToken, createTodo: CreateTodo)(
+        implicit transactor:              Trx
+    ): ZIO[Any, Throwable, Either[UnauthorizedErrorResponse, EmptyResponse]]
+
+    def handleToDoItemFinish(authToken: AuthToken, id: Int)(
+        implicit transactor:            Trx
+    ): ZIO[Any, Throwable, Either[ErrorResp, EmptyResponse]]
+
+    def handleListTodoItems(
+        authToken:         AuthToken
+    )(implicit transactor: Trx): ZIO[Any, Throwable, Either[ErrorResp, List[Todo]]]
+  }
+}
+
+trait TodoService {
+
+  val todoService: TodoService.Service
+}
+
+trait TodoServiceLive extends TodoService with AuthorizationService {
+
+  override val todoService: TodoService.Service = new TodoService.Service {
 
     override def handleTodoItemCreation(authToken: AuthToken, createTodo: CreateTodo)(
         implicit transactor:                       Trx
     ): ZIO[Any, Throwable, Either[UnauthorizedErrorResponse, EmptyResponse]] = {
-      isValidTokenForExistingUserAndExtractUser(authToken)
+      authorizationService
+        .isValidTokenForExistingUserAndExtractUser(authToken)
         .flatMap {
           case None => createUnauthorizedErrorResponse("Unauthorized to create this TODO item")
           case Some(loggedInUser) =>
@@ -43,14 +50,15 @@ object TodoService {
         implicit transactor:                     Trx
     ): ZIO[Any, Throwable, Either[ErrorResp, EmptyResponse]] = {
 
-      isValidTokenForExistingUserAndExtractUser(authToken)
+      authorizationService
+        .isValidTokenForExistingUserAndExtractUser(authToken)
         .flatMap {
           case None => createUnauthorizedErrorResponse("Unauthorized to finish this TODO item")
           case Some(loggedInUser) =>
             getOwnerOfTheTodoItem(id)
               .flatMap {
                 case None =>
-                  logMessage(s"No owner found for the todo item with id ${id}")
+                  logMessage(s"No owner found for the todo item with id $id")
                     .as(createForbiddenToFinishItemErrorResponse)
                 case Some(owner) if owner == loggedInUser => markTodoAsDone(id)
                 case _ =>
@@ -66,7 +74,7 @@ object TodoService {
       finishTodoItem(id).flatMap {
         case 1 => ZIO.succeed(Right[ErrorResp, EmptyResponse](EmptyResponse()))
         case _ =>
-          logMessage(s"Inconsistent data found while marking the item ${id} as done")
+          logMessage(s"Inconsistent data found while marking the item $id as done")
             .as(Left(ErrorResponse("Ooops, something went wrong...")))
       }
     }
@@ -78,7 +86,8 @@ object TodoService {
     override def handleListTodoItems(
         authToken:         AuthToken
     )(implicit transactor: Trx): ZIO[Any, Throwable, Either[ErrorResp, List[Todo]]] = {
-      isValidTokenForExistingUserAndExtractUser(authToken)
+      authorizationService
+        .isValidTokenForExistingUserAndExtractUser(authToken)
         .flatMap {
           case None               => createUnauthorizedErrorResponse("Unauthorized to see the todo items")
           case Some(loggedInUser) => listTodoItems(loggedInUser).map[Either[ErrorResp, List[Todo]]](Right(_))
@@ -89,9 +98,4 @@ object TodoService {
       ZIO.succeed(Left(UnauthorizedErrorResponse(message)))
     }
   }
-}
-
-trait ToDoServiceProvider {
-
-  val todoService: TodoService = TodoService.instance
 }

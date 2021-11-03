@@ -4,14 +4,22 @@ import cats.effect.{ConcurrentEffect, Timer}
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import todo.route.Routes
+import todo.service.{
+  AuthorizationService,
+  AuthorizationServiceLive,
+  TodoService,
+  TodoServiceLive,
+  UserService,
+  UserServiceLive
+}
 import zio._
 
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 
-object Server extends Routes {
+trait Server extends Routes with ServerEnvironment {
 
-  def run(implicit cs: ConcurrentEffect[Task], t: Timer[Task]): URIO[Transactional, Unit] = {
+  def startServer(implicit cs: ConcurrentEffect[Task], t: Timer[Task]): URIO[Transactional, Unit] = {
     val serverThreadPool = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2))
 
     createHttp4sRoutes().flatMap { routes =>
@@ -25,3 +33,11 @@ object Server extends Routes {
     }
   }
 }
+
+trait ServerEnvironment extends AuthorizationService with TodoService with UserService
+
+trait ServerEnvironmentLive
+    extends ServerEnvironment
+    with AuthorizationServiceLive
+    with TodoServiceLive
+    with UserServiceLive

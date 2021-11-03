@@ -6,7 +6,7 @@ import zio._
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 
-object Main extends zio.App {
+object Main extends zio.App with Server with ServerEnvironmentLive {
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] = {
     val transactor = Transactor.fromDriverManager[Task](
@@ -22,7 +22,7 @@ object Main extends zio.App {
       _ <- InitialDatabaseSetup.run
       transactor <- ZIO.service[Trx]
       _ <- Task.concurrentEffectWith { implicit ce =>
-        Server.run.provide(Has(transactor))
+        startServer.provide(Has(transactor))
       }
     } yield ExitCode.success
   }
