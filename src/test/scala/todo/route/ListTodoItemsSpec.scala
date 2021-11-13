@@ -1,10 +1,9 @@
-package todo.route
+package todo
+package route
 
 import io.circe.syntax._
 import org.http4s._
-import todo.{DatabaseSetup, ServiceSpec}
-import todo.model.Models.Todo
-import todo.service.AuthorizationService
+import model.Models.Todo
 import zio.{Runtime, Task, ZLayer}
 import zio.test.Assertion.equalTo
 import zio.test.{assertM, suite, testM, DefaultRunnableSpec, ZSpec}
