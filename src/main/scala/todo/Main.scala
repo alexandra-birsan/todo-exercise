@@ -1,12 +1,20 @@
 package todo
 
 import doobie.Transactor
+import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
+import org.http4s.server.blaze.BlazeServerBuilder
+import todo.Server.ServerInstance
+import todo.route.Routes
+import todo.service.{TodoService, UserService}
 import todo.util.InitialDatabaseSetup
 import zio._
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 
-object Main extends zio.App with Server with ServerEnvironmentLive {
+import java.util.concurrent.Executors
+import scala.concurrent.ExecutionContext
+
+object Main extends zio.App with ServerEnvironmentLive {
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] = {
     val transactor = Transactor.fromDriverManager[Task](
@@ -17,12 +25,21 @@ object Main extends zio.App with Server with ServerEnvironmentLive {
     program.provideLayer(ZLayer.succeed(transactor))
   }
 
-  val program: URIO[Transactional, ExitCode] = {
+  private val _userService = userService
+  private val _todoService = todoService
+
+  private val routesInstance = new Routes {
+    override val userService: UserService.Service = _userService
+    override val todoService: TodoService.Service = _todoService
+  }
+
+  private val program: URIO[Transactional, ExitCode] = {
     for {
       _ <- InitialDatabaseSetup.run
       transactor <- ZIO.service[Trx]
       _ <- Task.concurrentEffectWith { implicit ce =>
-        startServer.provide(Has(transactor))
+        val routes = routesInstance.routes(transactor)
+        ServerInstance(routes).startServer.provide(Has(transactor))
       }
     } yield ExitCode.success
   }
