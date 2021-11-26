@@ -4,7 +4,7 @@ package route
 import io.circe.syntax._
 import org.http4s._
 import model.Models.Todo
-import todo.service.AuthorizationService
+import utils.TokenUtils
 import zio.{Runtime, Task, ZLayer}
 import zio.test.Assertion.equalTo
 import zio.test.{DefaultRunnableSpec, ZSpec, assertM, suite, testM}
@@ -30,7 +30,7 @@ object ListTodoItemsSpec extends DefaultRunnableSpec with ServiceSpec {
       withExpiredJwt
     },
     testM("with an Authorization header that belongs to an existing user") {
-      val token        = AuthorizationService.generateToken("Alex")
+      val token        = TokenUtils.generateToken("Alex")
       val finalRequest = request.putHeaders(Header("Authorization", token))
       val value = app.flatMap(_.run(finalRequest).value)
       for {

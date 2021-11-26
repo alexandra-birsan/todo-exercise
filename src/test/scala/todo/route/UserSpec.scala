@@ -1,11 +1,11 @@
-package todo.route
+package todo
+package route
 
 import io.circe.parser._
 import io.circe.syntax._
 import org.http4s.{Method, Request, Status, Uri}
 import pdi.jwt.Jwt
-import todo.{DatabaseSetup, ServiceSpec}
-import todo.model.Models._
+import model.Models._
 import zio.{Runtime, Task, ZLayer}
 import zio.test.Assertion.equalTo
 import zio.test._

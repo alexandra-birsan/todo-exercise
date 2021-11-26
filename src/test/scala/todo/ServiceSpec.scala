@@ -8,11 +8,12 @@ import org.http4s.{Header, HttpRoutes, Request, Response, Status}
 import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim, JwtHeader}
 import model.Models.JwtContent
 import route.Routes
-import todo.service.{AuthorizationService, TodoService, UserService}
+import todo.service.{AuthorizationService, TodoService, TokenService, UserService}
+import todo.utils.TokenUtils
 import zio.interop.catz._
 import zio.test.Assertion.equalTo
 import zio.test._
-import zio.{Exit, Has, Task, URIO, ZIO, ZLayer}
+import zio.{ Has, Task, ZIO, ZLayer}
 
 trait ServiceSpec {
 
@@ -24,7 +25,7 @@ trait ServiceSpec {
   val secret = "secretKey"
   val authorization: JwtAlgorithm.HS256.type = JwtAlgorithm.HS256
   val header:        JwtHeader               = JwtHeader(authorization)
-  val userServiceLayer: ZLayer[Any, Throwable, Has[UserService.Service]] = UserService.live
+  val userServiceLayer: ZLayer[Any, Throwable, Has[UserService.Service]] = TokenService.live >>> UserService.live
   val authorizationServiceLayer: ZLayer[Any, Throwable, Has[AuthorizationService.Service]] =
     userServiceLayer  >>> AuthorizationService.live
   val todoServiceLayer: ZLayer[Any, Throwable, Has[TodoService.Service]] =  authorizationServiceLayer >>> TodoService.live
@@ -56,7 +57,7 @@ trait ServiceSpec {
   }
 
   def withJwtWithOwnerNotAnExistingUser(implicit request: Request[Task]): ZIO[Any, Throwable, TestResult] = {
-    val token        = AuthorizationService.generateToken("Peter")
+    val token        = TokenUtils.generateToken("Peter")
     val finalRequest = request.putHeaders(Header("Authorization", token))
     val value: ZIO[Any, Throwable, Option[Response[Task]]] =
       app.flatMap(_.run(finalRequest).value)

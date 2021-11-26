@@ -1,32 +1,16 @@
 package todo.service
 
-import java.time.Clock
 import todo.model.Models.JwtContent
 import pdi.jwt._
 import zio._
 import io.circe.parser._
-import io.circe.syntax._
 import todo.util.LoggingHelper.logErrorMessage
 import todo.Trx
 
 object AuthorizationService {
 
-  private implicit val clock: Clock = Clock.systemUTC
-
-  private val secret            = "secretKey"
-  private val authorization     = JwtAlgorithm.HS256
-  private val header            = JwtHeader(authorization)
-  private val validityInSeconds = 180
-
-  def generateToken(username: String): String = {
-    val content: String = JwtContent(username).asJson.noSpaces
-    val claim = JwtClaim().withContent(content).expiresIn(validityInSeconds).issuedNow.startsNow
-    Jwt.encode(header, claim, secret)
-  }
-
   trait Service {
 
-    def generateToken(username:                          String): String
     def isValidTokenForExistingUserAndExtractUser(token: String)(
         implicit transactor:                             Trx
     ): ZIO[Any, Throwable, Option[String]]
@@ -37,18 +21,8 @@ object AuthorizationService {
       userService =>
         new AuthorizationService.Service {
 
-          private val secret            = "secretKey"
-          private val authorization     = JwtAlgorithm.HS256
-          private val header            = JwtHeader(authorization)
-          private val validityInSeconds = 180
-
-          private implicit val clock: Clock = Clock.systemUTC
-
-          override def generateToken(username: String): String = {
-            val content: String = JwtContent(username).asJson.noSpaces
-            val claim = JwtClaim().withContent(content).expiresIn(validityInSeconds).issuedNow.startsNow
-            Jwt.encode(header, claim, secret)
-          }
+          private val secret        = "secretKey"
+          private val authorization = JwtAlgorithm.HS256
 
           override def isValidTokenForExistingUserAndExtractUser(
               token:             String
