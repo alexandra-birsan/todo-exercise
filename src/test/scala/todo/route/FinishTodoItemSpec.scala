@@ -3,6 +3,7 @@ package route
 
 import org.http4s._
 import model.Models.Todo
+import todo.service.AuthorizationService
 import zio.{Runtime, Task, ZLayer}
 import zio.test.Assertion.equalTo
 import zio.test.{DefaultRunnableSpec, ZSpec, assertM, suite, testM}
@@ -28,19 +29,19 @@ object FinishTodoItemSpec extends DefaultRunnableSpec with ServiceSpec {
       withExpiredJwt
     },
     testM("when the todo id parameter does not correspond to any existing todo item") {
-      val token        = authorizationService.generateToken("John")
+      val token        = AuthorizationService.generateToken("John")
       val finalRequest = request.putHeaders(Header("Authorization", token))
       val value = app.flatMap(_.run(finalRequest).value)
       assertM(value.map(_.get.status))(equalTo(Status.Forbidden))
     },
     testM("when the todo item does not belong to the owner of the JWT") {
-      val token        = authorizationService.generateToken("John")
+      val token        = AuthorizationService.generateToken("John")
       val finalRequest = Request[Task](Method.PUT, Uri(path = "v1/todo/3")).putHeaders(Header("Authorization", token))
       val value = app.flatMap(_.run(finalRequest).value)
       assertM(value.map(_.get.status))(equalTo(Status.Forbidden))
     },
     testM("when the todo item belongs to the owner of the JWT") {
-      val token   = authorizationService.generateToken("John")
+      val token   = AuthorizationService.generateToken("John")
       val todoId  = "1"
       val request = Request[Task](Method.PUT, Uri(path = "v1/todo/1")).putHeaders(Header("Authorization", token))
       val value = app.flatMap(_.run(request).value)

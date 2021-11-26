@@ -2,12 +2,13 @@ package todo
 
 import doobie.Transactor
 import todo.route.Routes
+import todo.service.{AuthorizationService, TodoService, UserService}
 import todo.util.InitialDatabaseSetup
 import zio.{ZLayer, _}
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 
-object Main extends zio.App with ServerEnvironmentLive {
+object Main extends zio.App {
 
   def run(args: List[String]): URIO[Any, ExitCode] = {
     val transactor = Transactor.fromDriverManager[Task](
@@ -21,6 +22,14 @@ object Main extends zio.App with ServerEnvironmentLive {
   }
 
   private val program: ZIO[Transactional, Any, ExitCode] = {
+    val userServiceLayer: ZLayer[Any, Throwable, Has[UserService.Service]] = UserService.live
+    val authorizationServiceLayer: ZLayer[Any, Throwable, Has[AuthorizationService.Service]] =
+      userServiceLayer >>> AuthorizationService.live
+    val todoServiceLayer
+        : ZLayer[Any, Throwable, Has[TodoService.Service]] = authorizationServiceLayer >>> TodoService.live
+    val routesServiceLayer
+        : ZLayer[Any, Throwable, Has[UserService.Service] with Has[TodoService.Service]] = todoServiceLayer ++ userServiceLayer
+    val serverLayer: ZLayer[Any, Throwable, Has[Routes.Service]] = routesServiceLayer >>> Routes.live
     for {
       _ <- InitialDatabaseSetup.run
       transactor <- ZIO.service[Trx]
@@ -28,8 +37,7 @@ object Main extends zio.App with ServerEnvironmentLive {
         Server
           .startServer(transactor)
           .provideLayer(
-            (ZLayer.succeed(todoService) ++ ZLayer.succeed(userService)) >>> Routes.live >>> Server.live ++ ZLayer
-              .succeed(transactor)
+            serverLayer >>> Server.live ++ ZLayer.succeed(transactor)
           )
       }
     } yield ExitCode.success

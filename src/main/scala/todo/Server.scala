@@ -4,7 +4,6 @@ import cats.effect.{ConcurrentEffect, Timer}
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import todo.route.Routes
-import todo.service.{AuthorizationServiceLive, TodoServiceLive, UserServiceLive}
 import zio.{Task, _}
 
 import java.util.concurrent.Executors
@@ -51,5 +50,3 @@ object Server {
   )(implicit cs: ConcurrentEffect[Task], t: Timer[Task]): ZIO[Has[Server.Service] with Transactional, Throwable, Unit] =
     ZIO.accessM(_.get.startServer(cs, t, trx))
 }
-
-trait ServerEnvironmentLive extends AuthorizationServiceLive with TodoServiceLive with UserServiceLive
