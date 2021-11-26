@@ -18,7 +18,7 @@ object Server {
   }
 
   // 2. layer -  service implementation
-  val live: ZLayer[Has[Routes], Nothing, Has[Server.Service]] = ZLayer.fromService { routes: Routes =>
+  val live: ZLayer[Has[Routes.Service], Nothing, Has[Server.Service]] = ZLayer.fromService { routes: Routes.Service =>
     new Service {
       override def startServer(
           implicit cs: ConcurrentEffect[Task],
@@ -27,15 +27,20 @@ object Server {
       ): URIO[Transactional, Unit] = {
         val serverThreadPool = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2))
 
-        URIO.succeed(
-          BlazeServerBuilder
-            .apply[Task](serverThreadPool)
-            .bindHttp(8080, "0.0.0.0")
-            .withHttpApp(routes.routes(trx).orNotFound)
-            .resource
-            .use(_ => UIO.never)
-            .orDie
-        )
+        routes
+          .createHttp4sRoutes()
+          .flatMap(
+            r =>
+              URIO.succeed(
+                BlazeServerBuilder
+                  .apply[Task](serverThreadPool)
+                  .bindHttp(8080, "0.0.0.0")
+                  .withHttpApp(r.orNotFound)
+                  .resource
+                  .use(_ => UIO.never)
+                  .orDie
+              )
+          )
       }
     }
   }

@@ -23,7 +23,7 @@ object UserSpec extends DefaultRunnableSpec with ServiceSpec {
     testM("create user when the username already exists") {
       val finalRequest =
         request.withUri(Uri(path = "v1/auth/new")).withEntity(UserCredentials("John", "secret123").asJson.noSpaces)
-      val value = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       for {
         isExpectedStatus <- assertM(value.map(_.get.status))(equalTo(Status.BadRequest))
         isExpectedBody <- assertM(getResponseBody(value))(equalTo(ErrorResponse("User already exists").asJson.noSpaces))
@@ -32,31 +32,31 @@ object UserSpec extends DefaultRunnableSpec with ServiceSpec {
     testM("create user with an invalid username") {
       val finalRequest =
         request.withUri(Uri(path = "v1/auth/new")).withEntity(UserCredentials("a", "secret123").asJson.noSpaces)
-      val value = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       assertM(value.map(_.get.status))(equalTo(Status.BadRequest))
     },
     testM("create user with an invalid password") {
       val finalRequest =
         request.withUri(Uri(path = "v1/auth/new")).withEntity(UserCredentials("Isac", "9").asJson.noSpaces)
-      val value = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       assertM(value.map(_.get.status))(equalTo(Status.BadRequest))
     },
     testM("create user when all the validations are successfully  passed") {
       val finalRequest =
         request.withUri(Uri(path = "v1/auth/new")).withEntity(UserCredentials("Isac", "secret123*").asJson.noSpaces)
-      val value = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       assertM(value.map(_.get.status))(equalTo(Status.Created))
     },
     testM("log in with invalid credentials") {
       val finalRequest =
         request.withEntity(UserCredentials("John", "secret123*").asJson.noSpaces)
-      val value = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       assertM(value.map(_.get.status))(equalTo(Status.Unauthorized))
     },
     testM("log in successfully") {
       val finalRequest =
         request.withEntity(UserCredentials("John", "secret").asJson.noSpaces)
-      val value = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       for {
         isExpectedStatus <- assertM(value.map(_.get.status))(equalTo(Status.Ok))
         jwtContent = getResponseBody(value)

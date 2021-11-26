@@ -2,9 +2,8 @@ package todo
 
 import doobie.Transactor
 import todo.route.Routes
-import todo.service.{TodoService, UserService}
 import todo.util.InitialDatabaseSetup
-import zio._
+import zio.{ZLayer, _}
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 
@@ -21,14 +20,6 @@ object Main extends zio.App with ServerEnvironmentLive {
       .catchAll(_ => ZIO.succeed().map(_ => ExitCode.failure))
   }
 
-  private val _userService = userService
-  private val _todoService = todoService
-
-  private val routesInstance = new Routes {
-    override val userService: UserService.Service = _userService
-    override val todoService: TodoService.Service = _todoService
-  }
-
   private val program: ZIO[Transactional, Any, ExitCode] = {
     for {
       _ <- InitialDatabaseSetup.run
@@ -36,8 +27,10 @@ object Main extends zio.App with ServerEnvironmentLive {
       _ <- Task.concurrentEffectWith { implicit ce =>
         Server
           .startServer(transactor)
-          .provideLayer(Server.live ++ ZLayer.succeed(routesInstance) ++ ZLayer.succeed(transactor))
-          .provideLayer(ZLayer.succeed(routesInstance))
+          .provideLayer(
+            (ZLayer.succeed(todoService) ++ ZLayer.succeed(userService)) >>> Routes.live >>> Server.live ++ ZLayer
+              .succeed(transactor)
+          )
       }
     } yield ExitCode.success
   }

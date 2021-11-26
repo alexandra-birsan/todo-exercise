@@ -4,9 +4,9 @@ package route
 import io.circe.syntax._
 import org.http4s._
 import model.Models.{CreateTodo, Todo}
-import zio.{Runtime, Task, ZLayer}
+import zio.{Runtime, Task, ZIO, ZLayer}
 import zio.test.Assertion.equalTo
-import zio.test.{assertM, suite, testM, DefaultRunnableSpec, ZSpec}
+import zio.test.{DefaultRunnableSpec, ZSpec, assertM, suite, testM}
 
 object CreateTodoItemSpec extends DefaultRunnableSpec with ServiceSpec {
 
@@ -35,13 +35,13 @@ object CreateTodoItemSpec extends DefaultRunnableSpec with ServiceSpec {
       val finalRequest = request
         .putHeaders(Header("Authorization", token))
         .withEntity(CreateTodo("").asJson.noSpaces)
-      val value = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       assertM(value.map(_.get.status))(equalTo(Status.BadRequest))
     },
     testM("when all the validations are successfully passed") {
       val token               = authorizationService.generateToken("John")
       val finalRequest        = request.putHeaders(Header("Authorization", token))
-      val value               = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       val nextToDoIdAvailable = 5
       val idOfTheLoggedInUser = 1
       for {

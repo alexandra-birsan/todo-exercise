@@ -31,7 +31,7 @@ object ListTodoItemsSpec extends DefaultRunnableSpec with ServiceSpec {
     testM("with an Authorization header that belongs to an existing user") {
       val token        = authorizationService.generateToken("Alex")
       val finalRequest = request.putHeaders(Header("Authorization", token))
-      val value        = app.run(finalRequest).value
+      val value = app.flatMap(_.run(finalRequest).value)
       for {
         isExpectedStatus <- assertM(value.map(_.get.status))(equalTo(Status.Ok))
         isExpectedBody <- assertM(getResponseBody(value))(
