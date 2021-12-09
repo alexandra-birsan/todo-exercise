@@ -1,3 +1,6 @@
+!!! Due to the changes that I made to use ZLayers, I "managed" to introduce a bug. When the server starts, it stops after a few seconds. 😔
+When I learn a bit more, I'll come back and fix this. Until then ... https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif
+
 # TODO Api exercise
 
 ## Project description
